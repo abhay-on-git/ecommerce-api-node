@@ -8,4 +8,10 @@ app.get("/",(req,res,next)=>{
     res.json({message:"Hello World!"})
 })
 
+const authRouter = require('./routes/auth.route')
+app.use('/auth',authRouter)
+
+const userRouter = require('./routes/user.route')
+app.use('/users',userRouter)
+
 module.exports = app
