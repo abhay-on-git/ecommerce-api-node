@@ -1,5 +1,6 @@
 const Category = require("../models/category.model");
 const Product = require('../models/product.model')
+
 async function createProduct(reqData) {
   let topLevel = await Category.findOne({ name: reqData.topLevelCategory });
 
@@ -70,7 +71,7 @@ async function findProductById(id){
 }
 
 async function getAllProducts(reqQuery){
-    let {category,color,sizes,minPrice,maxPrice,minDiscount,sort,stock,psgeNumber,pageSize} = reqQuery
+    let {category,color,sizes,minPrice,maxPrice,minDiscount,sort,stock,pageNumber,pageSize} = reqQuery
     pageSize = pageSize || 10
     let query = Product.find().populate("category")
 
@@ -110,4 +111,31 @@ async function getAllProducts(reqQuery){
             query =  query.where("quantity").lt(0)
         }
     }
+
+    if(sort){
+      const sortDirection = sort==="price_high"?-1:1;
+      query = query.sort({discountedPrice:sortDirection})
+    }
+
+    const totalProducts = await Product.countDocuments(query);
+    const skip = (pageNumber-1)*pageSize;
+    query = query.skip(skip).limit(pageSize)
+    const products = await query.exec()
+    const totalPage = Math.ceil(totalProducts/pageSize);
+    return {content:products,currentPage:pageNumber,totalPages:totalPage}
+}
+
+async function createMultipleProducts(products){
+  for(let product of products){
+     await createProduct(product)
+  }
+}
+
+module.exports = {
+  createProduct,
+  deleteProduct,
+  createMultipleProducts,
+  getAllProducts,
+  findProductById,
+  updateProduct,
 }
