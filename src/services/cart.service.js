@@ -15,9 +15,7 @@ async function createCart(user) {
 async function findUserCart(userId) {
   try {
     const cart = await Cart.findOne({ user: userId });
-    const cartItems = await CartItem.find({ cart: cart._id }).populate(
-      "products"
-    );
+    const cartItems = await CartItem.find({ cart: cart._id }).populate({path :"product"});
     cart.cartItems = cartItems;
     let totalPrice = 0;
     let totalDiscountedPrice = 0;
@@ -48,7 +46,7 @@ async function addCartItem(userId, req) {
       userId,
     });
     if (!isPresent) {
-      const CartItem = new CartItem({
+      const newCartItem = new CartItem({
         product: product._id,
         cart: cart._id,
         quantity: 1,
@@ -57,12 +55,10 @@ async function addCartItem(userId, req) {
         size: req.size,
         discountedPrice: product.discountedPrice,
       });
-      const createdCartItem = await CartItem.save();
+      const createdCartItem = await newCartItem.save();
       cart.cartItems.push(createdCartItem._id);
       await cart.save();
-      return res.json("item added to cart");
     }
-    return res.json('Item is Already in the cart')
   } catch (error) {
     throw new Error(error.message);
   }
