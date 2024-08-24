@@ -5,7 +5,8 @@ const createProduct = async (req, res) => {
     const product = await productService.createProduct(req.body);
     return res.status(201).send(product);
   } catch (error) {
-    res.status(500).send({ error: error.message + "ttttttttttttt" });
+    console.log("Error in Creating Product", error.message)
+    res.status(500).send("Error in Creating Product",error.message);
   }
 };
 

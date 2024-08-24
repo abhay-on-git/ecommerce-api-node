@@ -74,6 +74,7 @@ async function findProductById(id) {
 }
 
 async function getAllProducts(reqQuery) {
+  try {
   let {
     category,
     color,
@@ -90,7 +91,7 @@ async function getAllProducts(reqQuery) {
   let query = Product.find().populate("category");
 
   if (category) {
-    const existsCategory = await Category.findOne({ name: Category });
+    const existsCategory = await Category.findOne({ name: category });
     if (existsCategory) {
       query = query.where("category").equals(existsCategory._id);
     } else {
@@ -120,12 +121,10 @@ async function getAllProducts(reqQuery) {
     query = query.where("discountPersent").gte(minDiscount);
   }
 
-  if (stock) {
-    if ((stock = "in_stock")) {
-      query = query.where("quantity").gt(0);
-    } else if ((stock = "out_of_stock")) {
-      query = query.where("quantity").lt(0);
-    }
+  if (stock === "in_stock") {
+    query = query.where("quantity").gt(0);
+  } else if (stock === "out_of_stock") {
+    query = query.where("quantity").lt(0);
   }
 
   if (sort) {
@@ -134,11 +133,16 @@ async function getAllProducts(reqQuery) {
   }
 
   const totalProducts = await Product.countDocuments(query);
-  const skip = (pageNumber - 1) * pageSize;
+  const skip = (pageNumber) * pageSize;
   query = query.skip(skip).limit(pageSize);
   const products = await query.exec();
   const totalPage = Math.ceil(totalProducts / pageSize);
   return { content: products, currentPage: pageNumber, totalPages: totalPage };
+  } catch (error) {
+    console.log('Error in getting all the products : ' , error.message)
+    return { content: [], currentPage: 1, totalPages: 0 };
+
+  }
 }
 
 async function createMultipleProducts(products) {

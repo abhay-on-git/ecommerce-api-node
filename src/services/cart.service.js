@@ -15,26 +15,35 @@ async function createCart(user) {
 async function findUserCart(userId) {
   try {
     const cart = await Cart.findOne({ user: userId });
-    const cartItems = await CartItem.find({ cart: cart._id }).populate({path :"product"});
+    if (!cart) {
+      throw new Error('Cart not found');
+    }
+
+    const cartItems = await CartItem.find({ cart: cart._id }).populate('product');
     cart.cartItems = cartItems;
+
     let totalPrice = 0;
     let totalDiscountedPrice = 0;
     let totalItem = 0;
 
     for (let cartItem of cart.cartItems) {
-      (totalItem += cartItem.quantity),
-        (totalPrice += cartItem.price),
-        (totalDiscountedPrice += cartItem.discountedPrice);
+      totalItem += cartItem.quantity;
+      totalPrice += cartItem.price;
+      totalDiscountedPrice += cartItem.discountedPrice;
     }
+
     cart.totalPrice = totalPrice;
     cart.totalItem = totalItem;
     cart.discount = totalPrice - totalDiscountedPrice;
+    cart.totalDiscountedPrice = totalDiscountedPrice;
 
     return cart;
   } catch (error) {
+    console.error('Error in findUserCart:', error.message);
     throw new Error(error.message);
   }
 }
+
 
 async function addCartItem(userId, req) {
   try {
