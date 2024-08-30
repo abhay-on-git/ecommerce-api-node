@@ -23,9 +23,6 @@ const userSchema = new mongoose.Schema(
       required: true,
       default: "CUSTOMER",
     },
-    role: {
-      type: String,
-    },
     address: [
       {
         type: mongoose.Schema.Types.ObjectId,
